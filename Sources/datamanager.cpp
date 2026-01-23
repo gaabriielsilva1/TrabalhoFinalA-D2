@@ -3,7 +3,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
-#include "grafo.h"
+#include "Headers/grafo.h"
 
 void loadNodes(const QString& filePath, Grafo& grafo){
     QFile file(filePath);
