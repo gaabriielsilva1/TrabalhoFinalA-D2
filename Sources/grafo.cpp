@@ -10,6 +10,26 @@ void Grafo::adicionarAresta(long long u, long long v, double peso){
     listaAdj[u].push_back({v, peso});
 }
 
+void Grafo::associarNomeAoId(std::string nome, long long id) {
+    // Guarda o ID na lista dessa rua
+    mapaNomes[nome].push_back(id);
+}
+
+long long Grafo::getIdByName(QString nomeRua) {
+    // 1. Converte QString (Qt) para std::string (C++ Padrão)
+    std::string nomeStd = nomeRua.toStdString();
+
+    // 2. Verifica se a rua existe no mapa
+    if (mapaNomes.find(nomeStd) != mapaNomes.end()) {
+        // 3. Retorna o primeiro ID registrado para essa rua (geralmente o início dela)
+        // Como o vetor guarda vários IDs, pegamos o índice [0] ou .front()
+        return mapaNomes[nomeStd].front();
+    }
+
+    // 4. Se não achou, retorna -1 (sinal de erro para a GUI tratar)
+    return -1;
+}
+
 double Grafo::dijkstra(long long primeiroNodo, long long ultimoNodo){
     // Priority Queue para pegar sempre o menor caminho atual
     // Par: <distância acumulada, ID do nó>
@@ -47,3 +67,5 @@ double Grafo::dijkstra(long long primeiroNodo, long long ultimoNodo){
     }
     return -1;
 }
+
+
