@@ -1,6 +1,4 @@
 #include "Headers/grafo.h"
-#include <queue>
-#include <limits>
 
 Grafo::Grafo(){
 
@@ -28,6 +26,19 @@ long long Grafo::getIdByName(QString nomeRua) {
 
     // 4. Se não achou, retorna -1 (sinal de erro para a GUI tratar)
     return -1;
+}
+
+// RETORNA TODAS AS RUAS: PEGA AS CHAVES DO NOSSO DICIONÁRIO E CRIA UMA LISTA
+std::vector<std::string> Grafo::getTodasRuas() {
+    std::vector<std::string> listaRuas;
+
+    // O mapaNomes guarda: "Nome da Rua" -> [ID1, ID2...]
+    // Nós queremos só a parte do "Nome da Rua" (a chave do mapa)
+    for (auto const& [nome, ids] : mapaNomes) {
+        listaRuas.push_back(nome); // Guarda o nome na lista
+    }
+
+    return listaRuas; // Entrega a lista pronta para a MainWindow usar
 }
 
 double Grafo::dijkstra(long long primeiroNodo, long long ultimoNodo){

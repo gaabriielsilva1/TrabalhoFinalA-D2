@@ -14,13 +14,26 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item alignment="Qt::AlignmentFlag::AlignTop">
-     <widget class="QLineEdit" name="inputOrigem">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="labelResultado">
       <property name="text">
-       <string/>
+       <string>TextLabel</string>
       </property>
      </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="btnCalcular">
+      <property name="text">
+       <string>PushButton</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="txtOrigem"/>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="txtDestino"/>
     </item>
    </layout>
   </widget>

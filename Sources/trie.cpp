@@ -1,53 +1,65 @@
 #include "Headers/trie.h"
-#include <iostream>
 
+// CONSTRUTOR
 Trie::Trie(){
-  root = new TrieNode();
+    raiz = new TrieNode();
 }
 
+// DESTRUTOR
 Trie::~Trie(){
-  clear(root);
+    limpar(raiz);
 }
 
-void Trie::clear(TrieNode* node){
-  if(node == nullptr) return;
+// LIMPAR (Privado)
+void Trie::limpar(TrieNode* node){
+    if(node == nullptr) return;
 
-  for(auto& pair : node->children){
-    clear(pair.second);
-  }
-
-  delete node;
-}
-
-void Trie::insert(const std::string& word){
-  TrieNode* current = root;
-
-  for(char ch : word){
-    if(current->children.find(ch) == current -> children.end()){
-      current->children[ch] = new TrieNode();
+    for(auto& pair : node->filhos){
+        limpar(pair.second);
     }
-    current = current->children[ch]
-  }
-  current->ehFim = true;
+
+    delete node;
 }
 
-std::vector<std::string> Trie::autocomplete(const std::string& prefix) {
-    TrieNode* current = root;
+// INSERIR
+void Trie::inserir(const std::string& word){
+    TrieNode* current = raiz;
+
+    for(char ch : word){
+        if(current->filhos.find(ch) == current -> filhos.end()){
+            current->filhos[ch] = new TrieNode();
+        }
+        current = current->filhos[ch];
+    }
+    current->ehFim = true;
+}
+
+// AUTOCOMPLETE
+std::vector<std::string> Trie::autoComplete(const std::string& prefix) {
+    TrieNode* current = raiz;
     std::vector<std::string> results;
 
-    // 1. Navega até o final do prefixo digitado pelo usuário
+    // 1. Navega até o final do prefixo
     for (char ch : prefix) {
-        // Se em algum momento o caminho não existir, retorna lista vazia
-        if (current->children.find(ch) == current->children.end()) {
-            return results; 
+        if (current->filhos.find(ch) == current->filhos.end()) {
+            return results;
         }
-        current = current->children[ch];
+        current = current->filhos[ch];
     }
 
-    // 2. A partir do nó onde paramos, busca todas as palavras possíveis abaixo dele
-    collectSuggestions(current, prefix, results);
-    
+    // 2. A partir dali, coleta tudo o que tem pra baixo
+    coletarSugestoes(current, prefix, results);
+
     return results;
 }
 
+// COLETAR SUGESTÕES (A peça que faltava!)
+void Trie::coletarSugestoes(TrieNode* node, std::string prefixoAtual, std::vector<std::string>& resultados) {
+    if (node->ehFim) {
+        resultados.push_back(prefixoAtual);
+    }
 
+    for (auto const& pair : node->filhos) {
+        coletarSugestoes(pair.second, prefixoAtual + pair.first, resultados);
+    }
+}

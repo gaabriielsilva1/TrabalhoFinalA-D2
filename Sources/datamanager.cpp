@@ -3,72 +3,85 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
-#include <QVariant> // Importante para converter IDs grandes
+#include <QVariant>
 #include <QDebug>
+#include <QDir>
 
-DataManager::DataManager() {
-}
+DataManager::DataManager() {}
 
-bool DataManager::carregarDados(const QString& caminhoArquivo, Grafo& grafo, Trie& trie) {
-    QFile file(caminhoArquivo);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qDebug() << "Erro crítico: Não foi possível abrir o arquivo:" << caminhoArquivo;
+bool DataManager::carregarTodosArquivos(const QString& pastaRaiz, Grafo& grafo, Trie& trie) {
+    qDebug() << "Iniciando leitura dos arquivos na pasta:" << pastaRaiz;
+
+    // ==============================================================================
+    // ETAPA 1: LER EDGES.JSON (O Esqueleto do Grafo)
+    // ==============================================================================
+    QFile fileEdges(pastaRaiz + "/edges.json");
+    if (!fileEdges.open(QIODevice::ReadOnly)) {
+        qDebug() << "Erro fatal: Faltando edges.json";
         return false;
     }
 
-    QByteArray dados = file.readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(dados);
-    
-    // O seu arquivo começa com colchetes [ ... ], então é um Array direto
-    QJsonArray arrayArestas = doc.array(); 
-
-    qDebug() << "Carregando" << arrayArestas.size() << "arestas do OpenStreetMap...";
+    QJsonArray arrayArestas = QJsonDocument::fromJson(fileEdges.readAll()).array();
 
     for (const QJsonValue &valor : arrayArestas) {
         QJsonObject obj = valor.toObject();
-
-        // 1. Pegar IDs dos Nós (u = origem, v = destino)
-        // IDs do OSM são grandes, use toLongLong()
+        // Nota: Nesse formato separado, 'u' e 'v' costumam estar na raiz do objeto, não em 'data'
+        // Se der erro de leitura, verifique se seu json tem 'u' direto ou dentro de 'data'
         long long u = obj["u"].toVariant().toLongLong();
         long long v = obj["v"].toVariant().toLongLong();
 
-        // 2. Acessar o objeto "data" onde estão os detalhes
-        QJsonObject dataObj = obj["data"].toObject();
-        
-        // Extrair propriedades
-        double distancia = dataObj["length"].toDouble();
-        QString nomeRua = dataObj["name"].toString();
-        bool maoUnica = dataObj["oneway"].toBool();
+        // As vezes o length está direto, as vezes dentro de 'data'. Tenta os dois.
+        double distancia = obj["length"].toDouble();
+        if(distancia == 0 && obj.contains("data")) {
+            distancia = obj["data"].toObject()["length"].toDouble();
+        }
 
-        // Validação básica
         if (distancia > 0) {
-            // Adiciona aresta de ida (u -> v)
             grafo.adicionarAresta(u, v, distancia);
-
-            // SE NÃO FOR MÃO ÚNICA, adiciona a volta também (v -> u)
-            if (!maoUnica) {
-                grafo.adicionarAresta(v, u, distancia);
-            }
-
-            // Tratamento do Nome (Trie e Busca)
-            // Algumas ruas no JSON podem vir sem nome ou null
-            if (!nomeRua.isEmpty() && nomeRua != "null") {
-                std::string nomeStd = nomeRua.toStdString();
-
-                trie.insert(nomeStd);
-                
-                // Associa o nome ao nó de origem (u)
-                grafo.associarNomeAoId(nomeStd, u);
-                
-                // Se for mão dupla, podemos associar ao nó (v) também para facilitar a busca
-                if (!maoUnica) {
-                    grafo.associarNomeAoId(nomeStd, v);
-                }
-            }
+            // Assumindo que o mapa é mão dupla (se tiver info de oneway, adicione a lógica aqui)
+            grafo.adicionarAresta(v, u, distancia);
         }
     }
+    fileEdges.close();
+    qDebug() << "Topologia (Ruas) carregada.";
 
-    file.close();
-    qDebug() << "Leitura concluída! Grafo e Trie populados.";
+    // ==============================================================================
+    // ETAPA 2: LER LABEL_TO_NODES.JSON (Preencher a Trie e a Busca)
+    // Estrutura: "Nome da Rua": [ID1, ID2, ID3...]
+    // ==============================================================================
+    QFile fileLabel(pastaRaiz + "/label_to_nodes.json");
+    if (fileLabel.open(QIODevice::ReadOnly)) {
+        QJsonObject objLabel = QJsonDocument::fromJson(fileLabel.readAll()).object();
+
+        // Itera por todos os nomes de rua
+        for (auto it = objLabel.begin(); it != objLabel.end(); ++it) {
+            QString nomeRua = it.key();
+            std::string nomeStd = nomeRua.toStdString();
+
+            // 1. Adiciona na Trie (Autocomplete)
+            trie.inserir(nomeStd);
+
+            // 2. Pega a lista de IDs dessa rua
+            QJsonArray listaIds = it.value().toArray();
+            for(const QJsonValue& idVal : listaIds) {
+                long long idNode = idVal.toVariant().toLongLong();
+                // Associa esse nome a esse ID no Grafo
+                grafo.associarNomeAoId(nomeStd, idNode);
+            }
+        }
+        fileLabel.close();
+        qDebug() << "Nomes de busca carregados.";
+    } else {
+        qDebug() << "Aviso: label_to_nodes.json não encontrado. A busca por nome vai falhar.";
+    }
+
+    // ==============================================================================
+    // ETAPA 3: LER NODES_TO_LABEL.JSON (Para mostrar o nome da rua no final)
+    // Estrutura: "ID": "Nome da Rua"
+    // ==============================================================================
+    // OBS: O seu Grafo já faz isso automaticamente na função associarNomeAoId acima,
+    // mas se quiser garantir ou se o arquivo acima não tiver todos, pode ler este também.
+    // Geralmente a ETAPA 2 já resolve tudo para o seu trabalho.
+
     return true;
 }

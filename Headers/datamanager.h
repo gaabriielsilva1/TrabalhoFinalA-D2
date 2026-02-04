@@ -1,4 +1,4 @@
-ifndef DATAMANAGER_H
+#ifndef DATAMANAGER_H
 #define DATAMANAGER_H
 
 #include <QString>
@@ -8,9 +8,9 @@ ifndef DATAMANAGER_H
 class DataManager {
 public:
     DataManager();
-    
-    // Retorna true se carregou com sucesso, false se deu erro no arquivo
-    bool carregarDados(const QString& caminhoArquivo, Grafo& grafo, Trie& trie);
+
+    // Agora recebe o CAMINHO DA PASTA, pois vai buscar 3 arquivos lá dentro
+    bool carregarTodosArquivos(const QString& pastaRaiz, Grafo& grafo, Trie& trie);
 };
 
 #endif // DATAMANAGER_H

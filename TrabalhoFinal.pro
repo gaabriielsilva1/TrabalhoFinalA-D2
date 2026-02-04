@@ -1,37 +1,31 @@
-QT       += core network
-QT       -= gui
+QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++17 console
-CONFIG -= app_bundle
-INCLUDEPATH += Headers
+CONFIG += c++17
 
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+INCLUDEPATH += .
 
+# --- FONTES (CÓDIGO LÓGICO) ---
 SOURCES += \
-    Sources/datamanager.cpp \
-    Sources/grafo.cpp \
     Sources/main.cpp \
-    Sources/datamanager.cpp \
-    Sources/trie.cpp
+    Sources/mainwindow.cpp \
+    Sources/grafo.cpp \
+    Sources/trie.cpp \
+    Sources/datamanager.cpp
 
+# --- CABEÇALHOS (DECLARAÇÕES) ---
 HEADERS += \
-    Headers/datamanager.h \
+    Headers/mainwindow.h \
     Headers/grafo.h \
-    Headers/trie.h
+    Headers/trie.h \
+    Headers/datamanager.h
 
+# --- INTERFACE GRÁFICA ---
+# Verifica se o mainwindow.ui está na pasta raiz junto com o .pro
+# Se você moveu ele para uma pasta "Forms", mude para Forms/mainwindow.ui
 FORMS += \
-    Forms/grafo.ui
+    Forms/mainwindow.ui
 
-TRANSLATIONS += \
-    TrabalhoFinal_pt_BR.ts
-CONFIG += lrelease
-CONFIG += embed_translations
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+# --- IMPORTANTE: REMOVA QUALQUER LINHA QUE COMECE COM "TRANSLATIONS" ---
+# Aquele erro "Failure to find .ts" acontece por causa dessa linha.
