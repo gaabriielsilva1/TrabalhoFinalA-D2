@@ -1,4 +1,4 @@
-QT       += core gui
+QT += core gui quick quickwidgets location positioning
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -29,3 +29,9 @@ FORMS += \
 
 # --- IMPORTANTE: REMOVA QUALQUER LINHA QUE COMECE COM "TRANSLATIONS" ---
 # Aquele erro "Failure to find .ts" acontece por causa dessa linha.
+
+DISTFILES += \
+    mapaPelotas.qml
+
+RESOURCES += \
+    resources.qrc

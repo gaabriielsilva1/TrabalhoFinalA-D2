@@ -18,8 +18,17 @@ public:
     ~MainWindow();
 
 private slots:
-    // AÇÃO DO BOTÃO: ONDE O CLIQUE ACONTECE
-    void on_btnCalcular_clicked();
+//Lemoel
+
+    void on_botaoSair_clicked();
+
+    void on_pushButton_clicked();
+
+    void on_botaoCalcular_clicked();
+
+    void on_CalcularRota_clicked();
+
+    void on_calcularRota_clicked();
 
 private:
     Ui::MainWindow *ui;

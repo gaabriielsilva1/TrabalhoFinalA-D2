@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>mapaPelotas.qml</file>
+    </qresource>
+</RCC>
