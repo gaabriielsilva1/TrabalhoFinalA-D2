@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QQmlContext>
-#include <QDebug>
 #include <QCompleter>
 #include <QStringListModel>
 #include <QFile>
@@ -33,11 +32,6 @@ MainWindow::MainWindow(QWidget *parent)
     QString caminho = "C:/Users/WINDOWS 10/OneDrive/Desktop/TrabalhoFinalA-D2/ArqJSON";
     QDir diretorio(caminho);
 
-    qDebug() << "--- DEBUG DE CAMINHO ---";
-    qDebug() << "A pasta existe?" << diretorio.exists();
-    qDebug() << "O arquivo edges.json existe lá dentro?" << QFile::exists(caminho + "/edges.json");
-    qDebug() << "Caminho absoluto que o Qt está vendo:" << diretorio.absolutePath();
-    qDebug() << "------------------------";
     loader->carregarTodosArquivos(caminho, mainTrie, meuGrafo);
     loader->carregarTodosArquivos(caminho, mainTrie, meuGrafo);
 }
@@ -79,10 +73,28 @@ void MainWindow::on_calcularRota_clicked()
         QMessageBox::warning (this, "Erro de digitação!", "Campos não preenchidos");
         return;
     }
-    else {
-        qDebug() << "Origem é: " << variOrigem;
-        qDebug() << "Destino é: " << variDestino;
+
+    bool origemExiste = mainTrie->contem(variOrigem.toStdString());
+    bool destinoExiste = mainTrie->contem(variDestino.toStdString());
+    if (!origemExiste) {
+        QMessageBox::critical(this, "Erro de Localização", "A rua de origem não foi encontrada em Pelotas.");
+        qDebug() << "Falha na verificação: Origem inexistente ->" << variOrigem;
+        return;
     }
+
+    if (!destinoExiste) {
+        QMessageBox::critical(this, "Erro de Localização", "A rua de destino não foi encontrada em Pelotas.");
+        qDebug() << "Falha na verificação: Destino inexistente ->" << variDestino;
+        return;
+    }
+
+    /*
+    ================================
+    chamada do Dijkstra para calculo
+    ================================
+    */
+
+
 }
 
 void MainWindow::mostrarSugestoes(QLineEdit *campo, const QString &textoRecebido)
@@ -105,23 +117,21 @@ void MainWindow::mostrarSugestoes(QLineEdit *campo, const QString &textoRecebido
         listaParaExibir << QString::fromStdString(rua);
     }
 
-    //cria a caixa de sugestões na tela
     QCompleter *completerar = new QCompleter(listaParaExibir, this);
     completerar->setCaseSensitivity(Qt::CaseInsensitive);
     campo->setCompleter(completerar);
 }
 
 /*
-=========================================
-Ajuda da trie para completar campo Origem
-=========================================
+===================================================
+Ajuda da trie para completar campo origem e destino
+===================================================
 */
 
 void MainWindow::on_campoOrigem_textEdited(const QString &arg2)
 {
     mostrarSugestoes(ui->campoOrigem, arg2);
 }
-
 
 void MainWindow::on_campoDestino_textEdited(const QString &arg1)
 {

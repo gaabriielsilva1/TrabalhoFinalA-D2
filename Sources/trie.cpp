@@ -63,3 +63,16 @@ void Trie::coletarSugestoes(TrieNode* node, std::string prefixoAtual, std::vecto
         coletarSugestoes(pair.second, prefixoAtual + pair.first, resultados);
     }
 }
+
+//Lemoel
+
+bool Trie::contem(const std::string& word) {
+    TrieNode* current = raiz;
+    for (char ch : word) {
+        if (current->filhos.find(ch) == current->filhos.end()) {
+            return false; // Caractere não encontrado
+        }
+        current = current->filhos[ch];
+    }
+    return current->ehFim; // Retorna true se for o fim de uma palavra válida
+}
