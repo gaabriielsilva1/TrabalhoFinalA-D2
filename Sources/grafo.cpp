@@ -1,5 +1,5 @@
 #include "Headers/grafo.h"
-
+#include <algorithm>
 Grafo::Grafo(){
 
 }
@@ -41,42 +41,85 @@ std::vector<std::string> Grafo::getTodasRuas() {
     return listaRuas; // Entrega a lista pronta para a MainWindow usar
 }
 
-double Grafo::dijkstra(long long primeiroNodo, long long ultimoNodo){
-    // Priority Queue para pegar sempre o menor caminho atual
-    // Par: <distância acumulada, ID do nó>
+//funcao nova
+std::pair<std::vector<long long>, double> Grafo::dijkstra(long long primeiroNodo, long long ultimoNodo) {
 
-    std::priority_queue<std::pair<double,long long>,
+    // Priority Queue: <distância acumulada, ID do nó>
+    std::priority_queue<std::pair<double, long long>,
                         std::vector<std::pair<double, long long>>,
                         std::greater<>> pq;
 
     std::unordered_map<long long, double> distancia;
+    std::unordered_map<long long, long long> anterior; // NOVO: Guarda o "pai" de cada nó
 
-    for(auto const& [id, Aresta] : listaAdj){
+    // Inicializa as distâncias como infinito
+    for(auto const& [id, lista] : listaAdj) {
         distancia[id] = std::numeric_limits<double>::infinity();
     }
 
     distancia[primeiroNodo] = 0;
     pq.push({0, primeiroNodo});
 
-    while (!pq.empty()){
+    double dFinal = -1.0;
+
+    while (!pq.empty()) {
         double d = pq.top().first;
         long long u = pq.top().second;
         pq.pop();
 
-        if (u == ultimoNodo) return d;
+        // Se chegamos no destino, salvamos a distância e paramos a busca
+        if (u == ultimoNodo) {
+            dFinal = d;
+            break;
+        }
+
         if (d > distancia[u]) continue;
 
-        if (listaAdj.find(u) != listaAdj.end()){
-            for(auto& Aresta : listaAdj[u]){
-                if(distancia[u] + Aresta.peso < distancia[Aresta.destino]){
-                    distancia[Aresta.destino] = distancia[u] + Aresta.peso;
-                    pq.push({distancia[Aresta.destino], Aresta.destino});
+        if (listaAdj.find(u) != listaAdj.end()) {
+            for (auto& aresta : listaAdj[u]) {
+                // Relaxamento da aresta
+                if (distancia[u] + aresta.peso < distancia[aresta.destino]) {
+                    distancia[aresta.destino] = distancia[u] + aresta.peso;
+
+                    // NOVO: Salvamos que chegamos em 'destino' através de 'u'
+                    anterior[aresta.destino] = u;
+
+                    pq.push({distancia[aresta.destino], aresta.destino});
                 }
             }
         }
-
     }
-    return -1;
+
+    // 2. RECONSTRUÇÃO DO CAMINHO (Backtracking)
+    std::vector<long long> caminho;
+
+    if (dFinal != -1.0) { // Se existe um caminho...
+        long long atual = ultimoNodo;
+        while (atual != primeiroNodo) {
+            caminho.push_back(atual);
+            atual = anterior[atual]; // Volta para o nó anterior
+        }
+        caminho.push_back(primeiroNodo);
+
+        // Inverte o vetor para ficar na ordem: Origem -> Destino
+        std::reverse(caminho.begin(), caminho.end());
+    }
+
+    return {caminho, dFinal}; // Retorna as duas informações
+}
+
+// USADA PELO DATAMANAGER: Salva x (lon) e y (lat) de Pelotas
+void Grafo::adicionarNodo(long long id, double x, double y) {
+    mapaNodos[id] = {x, y}; // mapaNodos deve estar declarado no seu grafo.h
+}
+
+// USADA PELA INTERFACE: Traduz o ID para o ponto no mapa
+QGeoCoordinate Grafo::obterCoordenada(long long id) {
+    if (mapaNodos.count(id)) {
+        // No seu JSON, y costuma ser latitude e x longitude
+        return QGeoCoordinate(mapaNodos[id].y, mapaNodos[id].x);
+    }
+    return QGeoCoordinate(); // Retorna vazio se não encontrar
 }
 
 

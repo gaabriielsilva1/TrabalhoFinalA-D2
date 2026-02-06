@@ -40,6 +40,8 @@ bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* gr
             grafo->adicionarAresta(u, v, distancia);
             // Assumindo que o mapa é mão dupla (se tiver info de oneway, adicione a lógica aqui)
             grafo->adicionarAresta(v, u, distancia);
+        } else {
+            qDebug() << "Aviso: Aresta entre" << u << "e" << v << "com distância zero!";
         }
     }
     fileEdges.close();
@@ -55,22 +57,25 @@ bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* gr
 
         // Itera por todos os nomes de rua
         for (auto it = objLabel.begin(); it != objLabel.end(); ++it) {
-            QString nomeRua = it.key().toLower(); //Pega a rua "n sei o que x sei la"
-            std::string nomeStd = nomeRua.toStdString();
-            QStringList nomesIndividuais = nomeRua.split(" x ");
+            QString nomeCompleto = it.key().toLower();
+            QJsonArray listaIds = it.value().toArray();
+
+            // Divide o cruzamento (ex: "rua a x rua b") em nomes separados
+            QStringList nomesIndividuais = nomeCompleto.split(" x ");
 
             for (const QString &nomeRua : nomesIndividuais) {
-                //LIMPA ESPAÇOS SOBRANDO E INSERE CADA RUA NA TRIE
+                // 1. Limpa espaços e garante minúsculo
                 std::string ruaLimpa = nomeRua.trimmed().toStdString();
-            //Adiciona na Trie (Autocomplete)
+
+                // 2. Adiciona na Trie para o Autocomplete aparecer
                 trie->inserir(ruaLimpa);
-            }
-            // 2. Pega a lista de IDs dessa rua
-            QJsonArray listaIds = it.value().toArray();
-            for(const QJsonValue& idVal : listaIds) {
-                long long idNode = idVal.toVariant().toLongLong();
-                // Associa esse nome a esse ID no Grafo
-                grafo->associarNomeAoId(nomeStd, idNode);
+
+                // 3. VINCULA CADA RUA INDIVIDUAL AOS IDs NO GRAFO
+                // Isso resolve o erro de ID: -1
+                for(const QJsonValue& idVal : listaIds) {
+                    long long idNode = idVal.toVariant().toLongLong();
+                    grafo->associarNomeAoId(ruaLimpa, idNode);
+                }
             }
         }
         fileLabel.close();

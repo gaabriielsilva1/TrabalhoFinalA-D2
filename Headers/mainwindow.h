@@ -34,7 +34,7 @@ private:
 
     // NOSSAS FERRAMENTAS PRINCIPAIS
     Trie* mainTrie;
-    Grafo* meuGrafo;      // O mapa      // O corretor ortográfico
+    Grafo* mainGrafo;      // O mapa      // O corretor ortográfico
     DataManager* loader;  // O carregador de arquivos
 
     // FUNÇÃO AUXILIAR PARA CONFIGURAR O AUTOCOMPLETE NAS CAIXAS DE TEXTO

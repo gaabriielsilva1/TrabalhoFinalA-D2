@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QDir>
 #include <QLineEdit>
+#include <QQuickItem>
 
 //Lemoel
 
@@ -22,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi (this);
     mainTrie = new Trie();
-    meuGrafo = new Grafo();
+    mainGrafo = new Grafo();
     loader = new DataManager();
 
     //garante que o conteúdo qml preencha o widget
@@ -32,8 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
     QString caminho = "C:/Users/WINDOWS 10/OneDrive/Desktop/TrabalhoFinalA-D2/ArqJSON";
     QDir diretorio(caminho);
 
-    loader->carregarTodosArquivos(caminho, mainTrie, meuGrafo);
-    loader->carregarTodosArquivos(caminho, mainTrie, meuGrafo);
+    loader->carregarTodosArquivos(caminho, mainTrie, mainGrafo);
 }
 
 MainWindow::~MainWindow()
@@ -66,8 +66,8 @@ Botao de calcular rota
 
 void MainWindow::on_calcularRota_clicked()
 {
-    QString variOrigem = ui->campoOrigem->text();
-    QString variDestino = ui->campoDestino->text();
+    QString variOrigem = ui->campoOrigem->text().trimmed().toLower();
+    QString variDestino = ui->campoDestino->text().trimmed().toLower();
 
     if (variOrigem == "" || variDestino == "") {
         QMessageBox::warning (this, "Erro de digitação!", "Campos não preenchidos");
@@ -94,7 +94,44 @@ void MainWindow::on_calcularRota_clicked()
     ================================
     */
 
+    // 1. Busca os IDs correspondentes aos nomes das ruas
+    long long idOrigem = mainGrafo->getIdByName(variOrigem);
+    long long idDestino = mainGrafo->getIdByName(variDestino);
 
+    qDebug() << "Pesquisando Origem:" << variOrigem << " -> ID:" << idOrigem;
+    qDebug() << "Pesquisando Destino:" << variDestino << " -> ID:" << idDestino;
+
+    // 2. Chama o Dijkstra (que agora retorna o Par: Caminho e Distância)
+    auto resultado = mainGrafo->dijkstra(idOrigem, idDestino);
+
+    std::vector<long long> caminhoIds = resultado.first; // Lista de IDs do caminho
+    double distanciaMetros = resultado.second;          // Distância total
+
+    // 3. Verifica se a rota foi encontrada
+    if (distanciaMetros < 0) {
+        ui->imprimirDistancia->setText("Rota não encontrada.");
+        QMessageBox::information(this, "Aviso", "Não existe uma conexão entre essas ruas.");
+        return;
+    }
+
+    // 4. Atualiza o Label com os Quilômetros
+    double distanciaKm = distanciaMetros / 1000.0;
+    QString textoFinal = QString::number(distanciaKm, 'f', 2) + " km";
+    ui->imprimirDistancia->setText(textoFinal);
+
+    // 5. Prepara as coordenadas para o MAPA (QML)
+    QVariantList rotaParaDesenhar;
+    for (long long id : caminhoIds) {
+        // Usa a função obterCoordenada que criamos no Grafo
+        QGeoCoordinate coord = mainGrafo->obterCoordenada(id);
+        rotaParaDesenhar.append(QVariant::fromValue(coord));
+    }
+
+    // 6. Envia a lista de coordenadas para a função 'desenharRota' no QML
+    QObject *mapaRaiz = ui->ImagemMapa->rootObject();
+    if (mapaRaiz) {
+        QMetaObject::invokeMethod(mapaRaiz, "desenharRota", Q_ARG(QVariant, QVariant::fromValue(rotaParaDesenhar)));
+    }
 }
 
 void MainWindow::mostrarSugestoes(QLineEdit *campo, const QString &textoRecebido)

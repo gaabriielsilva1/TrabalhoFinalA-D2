@@ -6,6 +6,16 @@ Item {
     height: 300
     width: 500
 
+    MapPolyline {
+        id: linhaRota // <--- ESTE NOME TEM QUE SER EXATAMENTE ASSIM
+        line.width: 5
+        line.color: "blue"
+    }
+
+    function desenharRota(caminho) {
+            console.log("Recebi a rota!");
+            linhaRota.path = caminho;
+        }
     Plugin {
         id: mapPlugin
         name: "osm"

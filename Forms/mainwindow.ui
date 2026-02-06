@@ -17,6 +17,12 @@
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <widget class="QQuickWidget" name="ImagemMapa">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="resizeMode">
        <enum>QQuickWidget::ResizeMode::SizeRootObjectToView</enum>
       </property>
@@ -52,23 +58,36 @@
         </item>
        </layout>
       </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QPushButton" name="calcularRota">
+      <item alignment="Qt::AlignmentFlag::AlignHCenter">
+       <widget class="QLabel" name="imprimirDistancia">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>30</height>
+         </size>
+        </property>
         <property name="text">
-         <string>Calcular</string>
+         <string>0.0 Km</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="botaoSair">
-        <property name="text">
-         <string>Sair</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QPushButton" name="calcularRota">
+          <property name="text">
+           <string>Calcular</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="botaoSair">
+          <property name="text">
+           <string>Sair</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </item>
