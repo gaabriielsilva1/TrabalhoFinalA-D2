@@ -10,7 +10,7 @@ public:
     DataManager();
 
     // Agora recebe o CAMINHO DA PASTA, pois vai buscar 3 arquivos lá dentro
-    bool carregarTodosArquivos(const QString& pastaRaiz, Grafo& grafo, Trie& trie);
+    bool carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* grafo);
 };
 
 #endif // DATAMANAGER_H

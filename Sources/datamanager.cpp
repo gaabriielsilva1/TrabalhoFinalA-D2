@@ -9,7 +9,7 @@
 
 DataManager::DataManager() {}
 
-bool DataManager::carregarTodosArquivos(const QString& pastaRaiz, Grafo& grafo, Trie& trie) {
+bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* grafo) {
     qDebug() << "Iniciando leitura dos arquivos na pasta:" << pastaRaiz;
 
     // ==============================================================================
@@ -37,9 +37,9 @@ bool DataManager::carregarTodosArquivos(const QString& pastaRaiz, Grafo& grafo, 
         }
 
         if (distancia > 0) {
-            grafo.adicionarAresta(u, v, distancia);
+            grafo->adicionarAresta(u, v, distancia);
             // Assumindo que o mapa é mão dupla (se tiver info de oneway, adicione a lógica aqui)
-            grafo.adicionarAresta(v, u, distancia);
+            grafo->adicionarAresta(v, u, distancia);
         }
     }
     fileEdges.close();
@@ -55,33 +55,28 @@ bool DataManager::carregarTodosArquivos(const QString& pastaRaiz, Grafo& grafo, 
 
         // Itera por todos os nomes de rua
         for (auto it = objLabel.begin(); it != objLabel.end(); ++it) {
-            QString nomeRua = it.key();
+            QString nomeRua = it.key().toLower(); //Pega a rua "n sei o que x sei la"
             std::string nomeStd = nomeRua.toStdString();
+            QStringList nomesIndividuais = nomeRua.split(" x ");
 
-            // 1. Adiciona na Trie (Autocomplete)
-            trie.inserir(nomeStd);
-
+            for (const QString &nomeRua : nomesIndividuais) {
+                //LIMPA ESPAÇOS SOBRANDO E INSERE CADA RUA NA TRIE
+                std::string ruaLimpa = nomeRua.trimmed().toStdString();
+            //Adiciona na Trie (Autocomplete)
+                trie->inserir(ruaLimpa);
+            }
             // 2. Pega a lista de IDs dessa rua
             QJsonArray listaIds = it.value().toArray();
             for(const QJsonValue& idVal : listaIds) {
                 long long idNode = idVal.toVariant().toLongLong();
                 // Associa esse nome a esse ID no Grafo
-                grafo.associarNomeAoId(nomeStd, idNode);
+                grafo->associarNomeAoId(nomeStd, idNode);
             }
         }
         fileLabel.close();
         qDebug() << "Nomes de busca carregados.";
-    } else {
+    }else {
         qDebug() << "Aviso: label_to_nodes.json não encontrado. A busca por nome vai falhar.";
     }
-
-    // ==============================================================================
-    // ETAPA 3: LER NODES_TO_LABEL.JSON (Para mostrar o nome da rua no final)
-    // Estrutura: "ID": "Nome da Rua"
-    // ==============================================================================
-    // OBS: O seu Grafo já faz isso automaticamente na função associarNomeAoId acima,
-    // mas se quiser garantir ou se o arquivo acima não tiver todos, pode ler este também.
-    // Geralmente a ETAPA 2 já resolve tudo para o seu trabalho.
-
     return true;
 }

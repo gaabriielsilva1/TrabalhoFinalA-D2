@@ -4,6 +4,7 @@
 #include "grafo.h"
 #include "trie.h"
 #include "datamanager.h"
+#include <QLineEdit>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -26,16 +27,20 @@ private slots:
 
     void on_campoOrigem_textEdited(const QString &arg1);
 
+    void on_campoDestino_textEdited(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
 
     // NOSSAS FERRAMENTAS PRINCIPAIS
-    Grafo* meuGrafo;      // O mapa
-    Trie* mainTrie;      // O corretor ortográfico
+    Trie* mainTrie;
+    Grafo* meuGrafo;      // O mapa      // O corretor ortográfico
     DataManager* loader;  // O carregador de arquivos
 
     // FUNÇÃO AUXILIAR PARA CONFIGURAR O AUTOCOMPLETE NAS CAIXAS DE TEXTO
     void configurarAutocomplete();
+
+    void mostrarSugestoes(QLineEdit *campo, const QString &texto);
 };
 
 #endif // MAINWINDOW_H
