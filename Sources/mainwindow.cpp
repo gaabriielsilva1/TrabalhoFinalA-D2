@@ -3,6 +3,8 @@
 #include <QMessageBox>
 #include <QQmlContext>
 #include <QDebug>
+#include <QCompleter>
+#include <QStringListModel>
 
 //Lemoel
 
@@ -13,14 +15,16 @@ Comando do botao "sair"
 */
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    : QMainWindow (parent)
+    , ui (new Ui::MainWindow)
 {
-    ui->setupUi(this);
+    ui->setupUi (this);
 
     //garante que o conteúdo qml preencha o widget
-    ui->ImagemMapa->setResizeMode(QQuickWidget::SizeRootObjectToView);
-    ui->ImagemMapa->setSource(QUrl(QStringLiteral("qrc:/mapaPelotas.qml")));
+    ui->ImagemMapa->setResizeMode (QQuickWidget::SizeRootObjectToView);
+    ui->ImagemMapa->setSource (QUrl (QStringLiteral ("qrc:/mapaPelotas.qml")));
+
+
 }
 
 MainWindow::~MainWindow()
@@ -36,8 +40,8 @@ Comando do botao "sair"
 
 void MainWindow::on_botaoSair_clicked()
 {
-    QMessageBox::StandardButton  resposta = QMessageBox::question(this, "", "Deseja sair do programa?", QMessageBox::Yes | QMessageBox::No);
-    if(resposta == QMessageBox::Yes){
+    QMessageBox::StandardButton  resposta = QMessageBox::question (this, "", "Deseja sair do programa?", QMessageBox::Yes | QMessageBox::No);
+    if (resposta == QMessageBox::Yes) {
         close();
     }
     else{
@@ -56,13 +60,30 @@ void MainWindow::on_calcularRota_clicked()
     QString variOrigem = ui->campoOrigem->text();
     QString variDestino = ui->campoDestino->text();
 
-    if(variOrigem == "" || variDestino == ""){
-        QMessageBox::warning(this, "Erro de digitação!", "Campos não preenchidos");
+    if (variOrigem == "" || variDestino == "") {
+        QMessageBox::warning (this, "Erro de digitação!", "Campos não preenchidos");
         return;
     }
     else {
         qDebug() << "Origem é: " << variOrigem;
         qDebug() << "Destino é: " << variDestino;
     }
+}
+
+/*
+============================
+Ajuda da trie para completar
+============================
+*/
+
+void MainWindow::on_campoOrigem_textEdited(const QString &textoRecebido)
+{
+    if (textoRecebido.length() < 3) {
+        return;
+    }
+    std::string prefixo = textoRecebido.toStdString();
+    std::vector<std::string> ajudaPalavras = mainTrie->autoComplete(prefixo);
+
+    qDebug() << "Sugestões:" << ajudaPalavras.size();
 }
 

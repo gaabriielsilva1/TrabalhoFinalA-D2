@@ -22,20 +22,16 @@ private slots:
 
     void on_botaoSair_clicked();
 
-    void on_pushButton_clicked();
-
-    void on_botaoCalcular_clicked();
-
-    void on_CalcularRota_clicked();
-
     void on_calcularRota_clicked();
+
+    void on_campoOrigem_textEdited(const QString &arg1);
 
 private:
     Ui::MainWindow *ui;
 
     // NOSSAS FERRAMENTAS PRINCIPAIS
     Grafo* meuGrafo;      // O mapa
-    Trie* minhaTrie;      // O corretor ortográfico
+    Trie* mainTrie;      // O corretor ortográfico
     DataManager* loader;  // O carregador de arquivos
 
     // FUNÇÃO AUXILIAR PARA CONFIGURAR O AUTOCOMPLETE NAS CAIXAS DE TEXTO

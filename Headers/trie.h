@@ -16,13 +16,14 @@ class Trie {
 private:
     TrieNode* raiz;
     void limpar(TrieNode* node);
-    void coletarSugestoes(TrieNode* node, std::string prefixoAtual, std::vector<std::string>& resultados);
+
 
 public:
     Trie();
     ~Trie();
-
+    void coletarSugestoes(TrieNode* node, std::string prefixoAtual, std::vector<std::string>& resultados);
     void inserir(const std::string& word);
     std::vector<std::string> autoComplete(const std::string& prefixo);
+
 };
 
