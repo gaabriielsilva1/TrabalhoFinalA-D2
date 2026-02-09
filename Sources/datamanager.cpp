@@ -83,5 +83,24 @@ bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* gr
     }else {
         qDebug() << "Aviso: label_to_nodes.json não encontrado. A busca por nome vai falhar.";
     }
+
+    QFile fileNodes(pastaRaiz + "/nodes.json");
+    if (fileNodes.open(QIODevice::ReadOnly)) {
+        QJsonArray arrayNodes = QJsonDocument::fromJson(fileNodes.readAll()).array();
+
+        for (const QJsonValue &valor : arrayNodes) {
+            QJsonObject obj = valor.toObject();
+            long long id = obj["id"].toVariant().toLongLong();
+
+            // Em Pelotas, 'y' costuma ser Latitude e 'x' Longitude
+            double lon = obj["x"].toDouble();
+            double lat = obj["y"].toDouble();
+
+            // Alimenta o grafo com a posição física
+            grafo->adicionarNodo(id, lon, lat);
+        }
+        fileNodes.close();
+    }
+
     return true;
 }

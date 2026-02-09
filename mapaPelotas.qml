@@ -3,19 +3,10 @@ import QtLocation
 import QtPositioning
 
 Item {
+    id: root
     height: 300
     width: 500
 
-    MapPolyline {
-        id: linhaRota // <--- ESTE NOME TEM QUE SER EXATAMENTE ASSIM
-        line.width: 5
-        line.color: "blue"
-    }
-
-    function desenharRota(caminho) {
-            console.log("Recebi a rota!");
-            linhaRota.path = caminho;
-        }
     Plugin {
         id: mapPlugin
         name: "osm"
@@ -23,11 +14,6 @@ Item {
         PluginParameter {
             name: "osm.mapping.custom.host"
             value: "https://tile.openstreetmap.org/"
-        }
-
-        PluginParameter {
-            name: "osm"
-            value: "mapaPel"
         }
     }
 
@@ -39,5 +25,22 @@ Item {
         center: QtPositioning.coordinate(-31.7354, -52.3379)
 
         activeMapType: supportedMapTypes[supportedMapTypes.length - 1]
+
+        MapPolyline {
+            id: linhaRota
+            line.width: 5
+            line.color: "blue"
+        }
+    }
+
+    function desenharRota(caminho) {
+        if (caminho && caminho.length > 0) {
+            linhaRota.path = caminho;
+
+            // O zoom só funciona se o caminho tiver coordenadas reais
+            if (caminho.length >= 2) {
+                map.fitViewportToMapItems();
+            }
+        }
     }
 }
