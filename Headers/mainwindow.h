@@ -19,8 +19,6 @@ public:
     ~MainWindow();
 
 private slots:
-//Lemoel
-
     void on_botaoSair_clicked();
 
     void on_calcularRota_clicked();
@@ -32,15 +30,14 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    // NOSSAS FERRAMENTAS PRINCIPAIS
     Trie* mainTrie;
-    Grafo* mainGrafo;      // O mapa      // O corretor ortográfico
-    DataManager* loader;  // O carregador de arquivos
+    Grafo* mainGrafo;
+    DataManager* loader;
 
-    // FUNÇÃO AUXILIAR PARA CONFIGURAR O AUTOCOMPLETE NAS CAIXAS DE TEXTO
+    //auxiliar para configurar o autocomplete nas caixas de txt
     void configurarAutocomplete();
 
     void mostrarSugestoes(QLineEdit *campo, const QString &texto);
 };
 
-#endif // MAINWINDOW_H
+#endif //MAINWINDOW_H

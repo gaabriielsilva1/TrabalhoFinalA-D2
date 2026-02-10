@@ -37,7 +37,7 @@ Item {
         if (caminho && caminho.length > 0) {
             linhaRota.path = caminho;
 
-            // O zoom só funciona se o caminho tiver coordenadas reais
+            //zoom só funciona se o caminho tiver coordenadas reais
             if (caminho.length >= 2) {
                 map.fitViewportToMapItems();
             }

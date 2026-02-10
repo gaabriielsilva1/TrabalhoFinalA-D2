@@ -63,9 +63,9 @@ std::vector<std::string> Grafo::getTodasRuas() {
 }
 
 /*
-========================================
-
-========================================
+=================================
+PARA CALCULAR E AJUDAR NO CAMINHO
+=================================
 */
 
 std::pair<std::vector<long long>, double> Grafo::dijkstra(long long primeiroNodo, long long ultimoNodo) {

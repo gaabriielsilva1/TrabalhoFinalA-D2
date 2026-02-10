@@ -9,11 +9,9 @@
 #include <QLineEdit>
 #include <QQuickItem>
 
-//Lemoel
-
 /*
 ==============================
-Construtor da janela principal
+CONSTRUTOR DA JANELA PRINCIPAL
 ==============================
 */
 
@@ -26,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     mainGrafo = new Grafo();
     loader = new DataManager();
 
-    //garante que o conteúdo qml preencha o widget
+
     ui->ImagemMapa->setResizeMode (QQuickWidget::SizeRootObjectToView);
     ui->ImagemMapa->setSource (QUrl (QStringLiteral ("qrc:/mapaPelotas.qml")));
 
@@ -43,7 +41,7 @@ MainWindow::~MainWindow()
 
 /*
 =====================
-Comando do botao sair
+COMANDO DO BOTAO SAIR
 =====================
 */
 
@@ -60,7 +58,7 @@ void MainWindow::on_botaoSair_clicked()
 
 /*
 ======================
-Botao de calcular rota
+BOTAO DE CALCULAR ROTA
 ======================
 */
 
@@ -78,56 +76,51 @@ void MainWindow::on_calcularRota_clicked()
     bool destinoExiste = mainTrie->contem(variDestino.toStdString());
     if (!origemExiste) {
         QMessageBox::critical(this, "Erro de Localização", "A rua de origem não foi encontrada em Pelotas.");
-        qDebug() << "Falha na verificação: Origem inexistente ->" << variOrigem;
         return;
     }
 
     if (!destinoExiste) {
         QMessageBox::critical(this, "Erro de Localização", "A rua de destino não foi encontrada em Pelotas.");
-        qDebug() << "Falha na verificação: Destino inexistente ->" << variDestino;
         return;
     }
 
     /*
     ================================
-    chamada do Dijkstra para calculo
+    CHAMADA DO DIJKSTRA PARA CALCULO
     ================================
     */
 
-    // 1. Busca os IDs correspondentes aos nomes das ruas
     long long idOrigem = mainGrafo->getIdByName(variOrigem);
     long long idDestino = mainGrafo->getIdByName(variDestino);
 
     qDebug() << "Pesquisando Origem:" << variOrigem << " -> ID:" << idOrigem;
     qDebug() << "Pesquisando Destino:" << variDestino << " -> ID:" << idDestino;
 
-    // 2. Chama o Dijkstra (que agora retorna o Par: Caminho e Distância)
     auto resultado = mainGrafo->dijkstra(idOrigem, idDestino);
 
-    std::vector<long long> caminhoIds = resultado.first; // Lista de IDs do caminho
-    double distanciaMetros = resultado.second;          // Distância total
+    std::vector<long long> caminhoIds = resultado.first;
+    double distanciaMetros = resultado.second;
 
-    // 3. Verifica se a rota foi encontrada
     if (distanciaMetros < 0) {
         ui->imprimirDistancia->setText("Rota não encontrada.");
         QMessageBox::information(this, "Aviso", "Não existe uma conexão entre essas ruas.");
         return;
     }
 
-    // 4. Atualiza o Label com os Quilômetros
+    //att o label com os Kms
     double distanciaKm = distanciaMetros / 1000.0;
     QString textoFinal = QString::number(distanciaKm, 'f', 2) + " km";
     ui->imprimirDistancia->setText(textoFinal);
 
-    // 5. Prepara as coordenadas para o MAPA (QML)
+    //Prepara as coordenadas para o mapa
     QVariantList rotaParaDesenhar;
     for (long long id : caminhoIds) {
-        // Usa a função obterCoordenada que criamos no Grafo
+        //usa a função obterCoordenada que criamos no Grafo
         QGeoCoordinate coord = mainGrafo->obterCoordenada(id);
         rotaParaDesenhar.append(QVariant::fromValue(coord));
     }
 
-    // 6. Envia a lista de coordenadas para a função 'desenharRota' no QML
+    //manda as lista coordenadas para a função 'desenharRota' no qml
     QObject *mapaRaiz = ui->ImagemMapa->rootObject();
     if (mapaRaiz) {
         QMetaObject::invokeMethod(mapaRaiz, "desenharRota", Q_ARG(QVariant, QVariant::fromValue(rotaParaDesenhar)));
@@ -142,7 +135,7 @@ void MainWindow::mostrarSugestoes(QLineEdit *campo, const QString &textoRecebido
 
     /*
     ======================
-    buscando na trie ajuda
+    BUSCANDO NA TRIE AJUDA
     ======================
     */
 
@@ -161,7 +154,7 @@ void MainWindow::mostrarSugestoes(QLineEdit *campo, const QString &textoRecebido
 
 /*
 ===================================================
-Ajuda da trie para completar campo origem e destino
+AJUDA DA TRIE PARA COMPLETAR CAMPO ORIGEM E DESTINO
 ===================================================
 */
 

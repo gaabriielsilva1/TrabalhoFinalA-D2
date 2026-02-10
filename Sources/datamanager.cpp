@@ -26,7 +26,7 @@ bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* gr
 
     QFile fileEdges(pastaRaiz + "/edges.json");
     if (!fileEdges.open(QIODevice::ReadOnly)) {
-        qDebug() << "Erro: Não foi encontrado edges.json";
+        qDebug() << "Não foi encontrado edges.json";
         return false;
     }
 
@@ -36,18 +36,29 @@ bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* gr
         QJsonObject obj = valor.toObject();
         long long u = obj["u"].toVariant().toLongLong();
         long long v = obj["v"].toVariant().toLongLong();
+
         double distancia = obj["length"].toDouble();
-        if(distancia == 0 && obj.contains("data")) {
-            distancia = obj["data"].toObject()["length"].toDouble();
+        bool oneway = false;
+
+        if (obj.contains("data")) {
+            QJsonObject data = obj["data"].toObject();
+            if (distancia == 0) distancia = data["length"].toDouble();
+
+            //verifica se é mao unica
+            oneway = data["oneway"].toVariant().toBool();
+        } else {
+            //se estiver na raiz do objeto
+            oneway = obj["oneway"].toVariant().toBool();
         }
 
-        //ARRUMAR AQUIIIIIIIIIIIIIII
         if (distancia > 0) {
+            //smpre adiciona o sentido de u para v
             grafo->adicionarAresta(u, v, distancia);
-            // Assumindo que o mapa é mão dupla (se tiver info de oneway, adicione a lógica aqui)
-            grafo->adicionarAresta(v, u, distancia);
-        } else {
-            qDebug() << "Aresta entre" << u << "e" << v << "com distância zero!";
+
+            //so adiciona a volta se nao for mao unica
+            if (!oneway) {
+                grafo->adicionarAresta(v, u, distancia);
+            }
         }
     }
     fileEdges.close();
