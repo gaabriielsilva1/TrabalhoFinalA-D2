@@ -4,8 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include <Qstring>
-#include <queue>
-#include <limits>
+
 
 //para desenho do mapa
 struct Nodo {
