@@ -19,13 +19,13 @@ struct Aresta {
 
 class Grafo {
 private:
-    std::unordered_map<long long, std::vector<Aresta>> listaAdj; //tabela hash, que vai receber como chave um long, e de resposta uma lista de Aresta
+    std::unordered_map<long long, std::vector<Aresta>> listaAdj;
     //traduz o texto da rua para ids
-    std::unordered_map<std::string, std::vector<long long>> mapaNomes; //tabela  hash, como chave o nome de uma rua, e de resposta cada id q existe naquela rua
+    std::unordered_map<std::string, std::vector<long long>> mapaNomes;
     //traduz caminho do djkstra pra texto
-    std::unordered_map<long long, std::string> mapaIdsParaNomes; //tabela hash, como chave long(id), e resposta o nome da rua
+    std::unordered_map<long long, std::string> mapaIdsParaNomes;
     //para o desenho do mapa
-    std::unordered_map<long long, Nodo> mapaNodos; //tabela hash, chave o id, e vai ter um nodo com posição do id
+    std::unordered_map<long long, Nodo> mapaNodos;
 public:
     Grafo();
     void adicionarAresta(long long u, long long v, double peso);
@@ -40,7 +40,6 @@ public:
     std::vector<std::string> getTodasRuas();
 
     void associarNomeAoId(std::string nome, long long id); //usada pelo DataManager
-
 
     QString getNameById(long long id);
 };
