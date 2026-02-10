@@ -9,18 +9,17 @@
 
 //para desenho do mapa
 struct Nodo {
-    double x; // Longitude
-    double y; // Latitude
+    double x; //longitude
+    double y; //latitude
 };
 
 struct Aresta {
     long long destino;
-    double peso; // Distância
+    double peso; //distancia
 };
 
 class Grafo {
 private:
-    //LISTA DE ADJACÊNCIA:
     //ID ORIGIM -> Lista de adjacência
     std::unordered_map<long long, std::vector<Aresta>> listaAdj; //Mapa: ID do nó -> Lista de Arestas
 

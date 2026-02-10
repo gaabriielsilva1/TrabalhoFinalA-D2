@@ -1,16 +1,31 @@
 #include "Headers/trie.h"
 
-// CONSTRUTOR
+/*
+==========
+CONSTRUTOR
+==========
+*/
+
 Trie::Trie(){
     raiz = new TrieNode();
 }
 
-// DESTRUTOR
+/*
+=============
+DESCONSTRUTOR
+=============
+*/
+
 Trie::~Trie(){
     limpar(raiz);
 }
 
-// LIMPAR (Privado)
+/*
+======
+LIMPAR
+======
+*/
+
 void Trie::limpar(TrieNode* node){
     if(node == nullptr) return;
 
@@ -21,7 +36,12 @@ void Trie::limpar(TrieNode* node){
     delete node;
 }
 
-// INSERIR
+/*
+=======
+INSERIR
+=======
+*/
+
 void Trie::inserir(const std::string& word){
     TrieNode* current = raiz;
 
@@ -34,26 +54,34 @@ void Trie::inserir(const std::string& word){
     current->ehFim = true;
 }
 
-// AUTOCOMPLETE
+/*
+============
+AUTOCOMPLETE
+============
+*/
+
 std::vector<std::string> Trie::autoComplete(const std::string& prefix) {
     TrieNode* current = raiz;
     std::vector<std::string> results;
 
-    // 1. Navega até o final do prefixo
+    //vai até o final do prefixo
     for (char ch : prefix) {
         if (current->filhos.find(ch) == current->filhos.end()) {
             return results;
         }
         current = current->filhos[ch];
     }
-
-    // 2. A partir dali, coleta tudo o que tem pra baixo
     coletarSugestoes(current, prefix, results);
 
     return results;
 }
 
-// COLETAR SUGESTÕES (A peça que faltava!)
+/*
+=================
+COLETAR SUGESTOES
+=================
+*/
+
 void Trie::coletarSugestoes(TrieNode* node, std::string prefixoAtual, std::vector<std::string>& resultados) {
     if (node->ehFim) {
         resultados.push_back(prefixoAtual);
@@ -64,15 +92,19 @@ void Trie::coletarSugestoes(TrieNode* node, std::string prefixoAtual, std::vecto
     }
 }
 
-//Lemoel
+/*
+=================
+COLETAR SUGESTOES
+=================
+*/
 
 bool Trie::contem(const std::string& word) {
     TrieNode* current = raiz;
     for (char ch : word) {
         if (current->filhos.find(ch) == current->filhos.end()) {
-            return false; // Caractere não encontrado
+            return false;//n achou
         }
         current = current->filhos[ch];
     }
-    return current->ehFim; // Retorna true se for o fim de uma palavra válida
+    return current->ehFim;//volta true se for fim de pala
 }
