@@ -1,5 +1,10 @@
 #include "Headers/grafo.h"
 #include <algorithm>
+#include <queue>
+#include <vector>
+#include <functional>
+#include <limits>
+#include <utility>
 
 Grafo::Grafo(){
 }
@@ -32,15 +37,11 @@ RETORANR O ID APARTIR DO NOME
 */
 
 long long Grafo::getIdByName(QString nomeRua) {
-    //converte qstring para std::string
-    std::string nomeStd = nomeRua.toStdString();
-
-    //verifica se a rua existe no mapa
+    std::string nomeStd = nomeRua.toLower().trimmed().toStdString();
     if (mapaNomes.find(nomeStd) != mapaNomes.end()) {
-        //retorna primeiro id registrado do inicio dela
         return mapaNomes[nomeStd].front();
     }
-    //se não achou
+
     return -1;
 }
 
@@ -59,7 +60,7 @@ std::vector<std::string> Grafo::getTodasRuas() {
         listaRuas.push_back(nome); //guarda o nome na lista
     }
 
-    return listaRuas; // manda a lista para o mainwindow
+    return listaRuas; //manda a lista para o mainwindow
 }
 
 /*
@@ -70,18 +71,21 @@ PARA CALCULAR E AJUDAR NO CAMINHO
 
 std::pair<std::vector<long long>, double> Grafo::dijkstra(long long primeiroNodo, long long ultimoNodo) {
 
-    //guarda <distância acumulada, id do nó>
+    //fila de prioridade para pegar sempre a menor distância
     std::priority_queue<std::pair<double, long long>,
                         std::vector<std::pair<double, long long>>,
                         std::greater<>> pq;
 
     std::unordered_map<long long, double> distancia;
-    std::unordered_map<long long, long long> anterior;//guarda o pai de cada no
+    std::unordered_map<long long, long long> anterior;
 
-    //inicia as distancias como infinito
-    for(auto const& [id, lista] : listaAdj) {
+    //inicializa usando mapaNodos para garantir que todos os pontos comecem como infinito.
+    for(auto const& [id, coord] : mapaNodos) {
         distancia[id] = std::numeric_limits<double>::infinity();
     }
+
+    // Se o ponto de partida não existe no mapa, cancela
+    if (distancia.find(primeiroNodo) == distancia.end()) return {{}, -1.0};
 
     distancia[primeiroNodo] = 0;
     pq.push({0, primeiroNodo});
@@ -93,7 +97,6 @@ std::pair<std::vector<long long>, double> Grafo::dijkstra(long long primeiroNodo
         long long u = pq.top().second;
         pq.pop();
 
-        //se chegar no destino salva a distancia e para a busca
         if (u == ultimoNodo) {
             dFinal = d;
             break;
@@ -101,7 +104,8 @@ std::pair<std::vector<long long>, double> Grafo::dijkstra(long long primeiroNodo
 
         if (d > distancia[u]) continue;
 
-        if (listaAdj.find(u) != listaAdj.end()) {
+        //verifica se o nó 'u' tem vizinhos na lista de adjacência
+        if (listaAdj.count(u)) {
             for (auto& aresta : listaAdj[u]) {
                 if (distancia[u] + aresta.peso < distancia[aresta.destino]) {
                     distancia[aresta.destino] = distancia[u] + aresta.peso;
@@ -112,27 +116,20 @@ std::pair<std::vector<long long>, double> Grafo::dijkstra(long long primeiroNodo
         }
     }
 
-    /*
-    ===================================
-    PARA RECONSTRUIR A ROTA PARA O MAPA
-    ===================================
-    */
-
+    //reconstruçao do Caminho
     std::vector<long long> caminho;
-
-    if (dFinal != -1.0) { //se existe um caminho
+    if (dFinal != -1.0) {
         long long atual = ultimoNodo;
         while (atual != primeiroNodo) {
             caminho.push_back(atual);
-            atual = anterior[atual]; //volta para o no anterior
+            if (anterior.find(atual) == anterior.end()) break;
+            atual = anterior[atual];
         }
         caminho.push_back(primeiroNodo);
-
-        //inverte o vetor para ficar na ordem Origem -> Destino
         std::reverse(caminho.begin(), caminho.end());
     }
 
-    return {caminho, dFinal}; //retorna as duas informações
+    return {caminho, dFinal};
 }
 
 /*

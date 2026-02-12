@@ -32,7 +32,7 @@ public:
     //vetor com os ids do caminho
     //distância total em double
     std::pair<std::vector<long long>, double> dijkstra(long long origem, long long destino);
-
+    long long getIdByName(QString nomeRua);
     void adicionarNodo(long long id, double x, double y);//para ajudar no desenho
 
     QGeoCoordinate obterCoordenada(long long id); //desenho do mapa

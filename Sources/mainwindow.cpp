@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->ImagemMapa->setResizeMode (QQuickWidget::SizeRootObjectToView);
     ui->ImagemMapa->setSource (QUrl (QStringLiteral ("qrc:/mapaPelotas.qml")));
 
-    QString caminho = "C:/Users/WINDOWS 10/OneDrive/Desktop/TrabalhoFinalA-D2/ArqJSON";
+    QString caminho = "C:/Users/limao/OneDrive/Desktop/TrabalhoFinalA-D2/ArqJSON";
     QDir diretorio(caminho);
 
     loader->carregarTodosArquivos(caminho, mainTrie, mainGrafo);
@@ -84,35 +84,40 @@ void MainWindow::on_calcularRota_clicked()
         return;
     }
 
-    /*
-    ================================
-    CHAMADA DO DIJKSTRA PARA CALCULO
-    ================================
-    */
-
     long long idOrigem = mainGrafo->getIdByName(variOrigem);
     long long idDestino = mainGrafo->getIdByName(variDestino);
 
-    qDebug() << "Pesquisando Origem:" << variOrigem << " -> ID:" << idOrigem;
-    qDebug() << "Pesquisando Destino:" << variDestino << " -> ID:" << idDestino;
+    if (idOrigem == -1 || idDestino == -1) {
+        QString erro = "Não foi possível localizar: ";
+        if (idOrigem == -1) erro += "\n- Origem: " + variOrigem;
+        if (idDestino == -1) erro += "\n- Destino: " + variDestino;
+
+        QMessageBox::warning(this, "Erro de Localização", erro);
+        return; //para a execução aqui para não travar o Dijkstra
+    }
+
+    qDebug() << "Calculando rota de ID" << idOrigem << "para ID" << idDestino;
 
     auto resultado = mainGrafo->dijkstra(idOrigem, idDestino);
 
     std::vector<long long> caminhoIds = resultado.first;
     double distanciaMetros = resultado.second;
 
-    if (distanciaMetros < 0) {
+    //verifica se o algoritmo encontrou um caminho valido
+    if (distanciaMetros < 0 || caminhoIds.empty()) {
         ui->imprimirDistancia->setText("Rota não encontrada.");
-        QMessageBox::information(this, "Aviso", "Não existe uma conexão entre essas ruas.");
+        QMessageBox::information(this, "Aviso", "Os pontos existem, mas não há ruas que os conectem (Ilha ou mão única proibida).");
         return;
     }
+
+    ui->imprimirDistancia->setText(QString::number(distanciaMetros, 'f', 2) + " metros");
 
     //att o label com os Kms
     double distanciaKm = distanciaMetros / 1000.0;
     QString textoFinal = QString::number(distanciaKm, 'f', 2) + " km";
     ui->imprimirDistancia->setText(textoFinal);
 
-    //Prepara as coordenadas para o mapa
+    //prepara as coordenadas para o mapa
     QVariantList rotaParaDesenhar;
     for (long long id : caminhoIds) {
         //usa a função obterCoordenada que criamos no Grafo
@@ -129,29 +134,32 @@ void MainWindow::on_calcularRota_clicked()
 
 void MainWindow::mostrarSugestoes(QLineEdit *campo, const QString &textoRecebido)
 {
-    if (textoRecebido.length() < 2) {
-        return;
-    }
-
-    /*
-    ======================
-    BUSCANDO NA TRIE AJUDA
-    ======================
-    */
+    if (textoRecebido.length() < 2) return;
 
     std::string prefixo = textoRecebido.toLower().toStdString();
     std::vector<std::string> ajudaPalavras = mainTrie->autoComplete(prefixo);
+
+    qDebug() << "Texto digitado:" << textoRecebido;
+    qDebug() << "Sugestões encontradas:" << ajudaPalavras.size();
+    if (ajudaPalavras.empty()) return;
 
     QStringList listaParaExibir;
     for (const std::string& rua : ajudaPalavras) {
         listaParaExibir << QString::fromStdString(rua);
     }
 
+    //cria o completer
     QCompleter *completerar = new QCompleter(listaParaExibir, this);
     completerar->setCaseSensitivity(Qt::CaseInsensitive);
-    campo->setCompleter(completerar);
-}
 
+    //define como ele deve se comportar
+    completerar->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
+    campo->setCompleter(completerar);
+
+    //fazer o aparecimento da lista
+    completerar->setCompletionPrefix(textoRecebido);
+    completerar->complete();
+}
 /*
 ===================================================
 AJUDA DA TRIE PARA COMPLETAR CAMPO ORIGEM E DESTINO

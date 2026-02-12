@@ -24,19 +24,17 @@ bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* gr
     ===================
     */
 
-    QFile fileEdges(pastaRaiz + "/edges.json");
-    if (!fileEdges.open(QIODevice::ReadOnly)) {
+    QFile fileEdges(pastaRaiz + "/edges.json"); //criando um objeto chamado fileEdges
+    if (!fileEdges.open(QIODevice::ReadOnly)) {//vai avisar que quer abrir o arq
         qDebug() << "Não foi encontrado edges.json";
         return false;
     }
 
     QJsonArray arrayArestas = QJsonDocument::fromJson(fileEdges.readAll()).array();
-
-    for (const QJsonValue &valor : arrayArestas) {
-        QJsonObject obj = valor.toObject();
+    for (const QJsonValue &valor : arrayArestas) { //vamos percorrer o array q criamos
+        QJsonObject obj = valor.toObject(); //cada valor sera do array sera transformado em um obj,representa uma unica rua
         long long u = obj["u"].toVariant().toLongLong();
         long long v = obj["v"].toVariant().toLongLong();
-
         double distancia = obj["length"].toDouble();
         bool oneway = false;
 
@@ -74,30 +72,45 @@ bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* gr
     if (fileLabel.open(QIODevice::ReadOnly)) {
         QJsonObject objLabel = QJsonDocument::fromJson(fileLabel.readAll()).object();
 
-        //itera por todos os nomes de rua
         for (auto it = objLabel.begin(); it != objLabel.end(); ++it) {
-            QString nomeCompleto = it.key().toLower();
+            QString nomeOriginal = it.key().toLower().trimmed();
             QJsonArray listaIds = it.value().toArray();
-            //divide o cruzamento em nomes separados
-            QStringList nomesIndividuais = nomeCompleto.split(" x ");
-            for (const QString &nomeRua : nomesIndividuais) {
-                //limpa espaços e garante minúsculo
-                std::string ruaLimpa = nomeRua.trimmed().toStdString();
 
-                //adiciona na Trie para o autocomplete aparecer
-                trie->inserir(ruaLimpa);
+            //inserir o cruzamento completo
+            std::string strOriginal = nomeOriginal.toStdString();
+            trie->inserir(strOriginal);
 
-                //vincula cada rua individual aos ids no grafo
+            //vincular ao Grafo
+            for(const QJsonValue& idVal : listaIds) {
+                grafo->associarNomeAoId(strOriginal, idVal.toVariant().toLongLong());
+            }
+
+            //quebrar o nome para variações
+            QStringList partes = nomeOriginal.split(" x ");
+            if (partes.size() == 2) {
+                QString ruaA = partes[0].trimmed();
+                QString ruaB = partes[1].trimmed();
+
+                //versão Invertida(rua B x rua A)
+                QString nomeInvertido = ruaB + " x " + ruaA;
+                std::string strInvertida = nomeInvertido.toStdString();
+                trie->inserir(strInvertida);
+
+                //se o nome começar com "rua ", insere também sem o "rua "
+                if(ruaA.startsWith("rua ")) trie->inserir(ruaA.mid(4).trimmed().toStdString());
+                if(ruaB.startsWith("rua ")) trie->inserir(ruaB.mid(4).trimmed().toStdString());
+
+                //vincular todas essas variações ao mesmo id no Grafo
                 for(const QJsonValue& idVal : listaIds) {
                     long long idNode = idVal.toVariant().toLongLong();
-                    grafo->associarNomeAoId(ruaLimpa, idNode);
+                    grafo->associarNomeAoId(strInvertida, idNode);
+                    grafo->associarNomeAoId(ruaA.toStdString(), idNode);
+                    grafo->associarNomeAoId(ruaB.toStdString(), idNode);
                 }
             }
         }
         fileLabel.close();
-        qDebug() << "Nomes de busca carregados.";
-    }else {
-        qDebug() << "Aviso: label_to_nodes.json não encontrado. A busca por nome vai falhar.";
+        qDebug() << "Nomes e variações carregados.";
     }
 
     /*
