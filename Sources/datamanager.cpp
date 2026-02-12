@@ -96,11 +96,11 @@ bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* gr
                 std::string strInvertida = nomeInvertido.toStdString();
                 trie->inserir(strInvertida);
 
-                //se o nome começar com "rua ", insere também sem o "rua "
+                //se o nome começar com "rua, insere tmb sem o "rua "
                 if(ruaA.startsWith("rua ")) trie->inserir(ruaA.mid(4).trimmed().toStdString());
                 if(ruaB.startsWith("rua ")) trie->inserir(ruaB.mid(4).trimmed().toStdString());
 
-                //vincular todas essas variações ao mesmo id no Grafo
+                //vincular todas essas variacoes ao mesmo id no Grafo
                 for(const QJsonValue& idVal : listaIds) {
                     long long idNode = idVal.toVariant().toLongLong();
                     grafo->associarNomeAoId(strInvertida, idNode);
