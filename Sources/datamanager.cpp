@@ -24,15 +24,15 @@ bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* gr
     ===================
     */
 
-    QFile fileEdges(pastaRaiz + "/edges.json"); //criando um objeto chamado fileEdges
-    if (!fileEdges.open(QIODevice::ReadOnly)) {//vai avisar que quer abrir o arq
+    QFile fileEdges(pastaRaiz + "/edges.json");
+    if (!fileEdges.open(QIODevice::ReadOnly)) {
         qDebug() << "Não foi encontrado edges.json";
         return false;
     }
 
     QJsonArray arrayArestas = QJsonDocument::fromJson(fileEdges.readAll()).array();
-    for (const QJsonValue &valor : arrayArestas) { //vamos percorrer o array q criamos
-        QJsonObject obj = valor.toObject(); //cada valor sera do array sera transformado em um obj,representa uma unica rua
+    for (const QJsonValue &valor : arrayArestas) {
+        QJsonObject obj = valor.toObject();
         long long u = obj["u"].toVariant().toLongLong();
         long long v = obj["v"].toVariant().toLongLong();
         double distancia = obj["length"].toDouble();
@@ -91,7 +91,7 @@ bool DataManager::carregarTodosArquivos(QString pastaRaiz, Trie* trie, Grafo* gr
                 QString ruaA = partes[0].trimmed();
                 QString ruaB = partes[1].trimmed();
 
-                //versão Invertida(rua B x rua A)
+                //versão invertida(rua B x rua A)
                 QString nomeInvertido = ruaB + " x " + ruaA;
                 std::string strInvertida = nomeInvertido.toStdString();
                 trie->inserir(strInvertida);
